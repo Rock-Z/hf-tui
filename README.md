@@ -4,7 +4,7 @@ Very small Textual TUI for Hugging Face models with:
 - frontend/backend split,
 - one persistent config file,
 - isolated cache dir,
-- checkpoint menu (inspect/add/delete),
+- model-management popup (inspect/add/delete),
 - mock + live tiny-model support.
 
 ## Core files (5)
@@ -32,11 +32,19 @@ Example:
 }
 ```
 
-## Run
-```bash
-uv sync
-uv run hf-tui --config .hf-tui/config.json
-```
+## Quick guide
+1. Install deps:
+   ```bash
+   uv sync
+   ```
+2. Run app:
+   ```bash
+   uv run hf-tui --config .hf-tui/config.json
+   ```
+3. Load a model in the top input and click **Load**.
+4. Chat in the prompt box and click **Send**.
+5. Open model manager popup with **Models** button (or press `m`) to add/delete/inspect checkpoints.
+6. Edit `.hf-tui/config.json` directly any time to change default model/settings/checkpoints.
 
 ## Notes on generation
 - Uses Transformers `pipeline("text-generation")`.
@@ -50,4 +58,3 @@ python -m pytest -q tests/test_live_tui_app.py
 This drives the Textual TUI and live-loads:
 - `roneneldan/TinyStories-33M` (tiny base model)
 - `HuggingFaceTB/SmolLM2-135M-Instruct` (tiny chat/instruct model)
-
