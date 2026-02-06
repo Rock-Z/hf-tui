@@ -3,21 +3,36 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+DEFAULT_CONFIG = {
+    "cache_dir": ".hf-tui-cache",
+    "active_model": "mock",
+    "temperature": 0.7,
+    "max_new_tokens": 128,
+    "thinking": False,
+    "trust_remote_code": False,
+    "checkpoints": [],
+}
+
+
+def resolve_cache_dir(cfg: dict, config_path: str | Path) -> Path:
+    raw = cfg.get("cache_dir", ".hf-tui-cache")
+    cache_path = Path(raw)
+    if not cache_path.is_absolute():
+        cache_path = Path(config_path).resolve().parent / cache_path
+    return cache_path.resolve()
+
 
 def load_config(path: str | Path) -> dict:
     p = Path(path)
     if not p.exists():
-        data = {
-            "cache_dir": ".hf-tui-cache",
-            "active_model": "mock",
-            "temperature": 0.7,
-            "max_new_tokens": 128,
-            "thinking": False,
-            "checkpoints": [],
-        }
+        data = dict(DEFAULT_CONFIG)
         save_config(p, data)
         return data
-    return json.loads(p.read_text())
+    data = json.loads(p.read_text())
+    merged = {**DEFAULT_CONFIG, **data}
+    if merged != data:
+        save_config(p, merged)
+    return merged
 
 
 def save_config(path: str | Path, data: dict) -> None:

@@ -11,6 +11,7 @@ from hf_tui.ui import ChatScreen
 class HfTuiApp(App[None]):
     CSS = """
     #model_row Input { width: 1fr; }
+    #model_row Checkbox { width: 14; }
     #model_row Button { width: 12; }
     #main_row { height: 1fr; }
     #chat { width: 1fr; }
@@ -20,6 +21,7 @@ class HfTuiApp(App[None]):
     #chat_actions Input#prompt { width: 1fr; }
     #temp, #tokens { width: 10; }
     #chat_actions Button#send { width: 12; }
+    #chat_actions Button#clear { width: 12; }
     #manager_actions Input { width: 1fr; }
     #manager_actions Button { width: 16; }
     #models { height: 1fr; }

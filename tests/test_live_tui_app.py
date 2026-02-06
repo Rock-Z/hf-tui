@@ -36,22 +36,43 @@ def test_live_tui_load_base_and_chat_models(tmp_path: Path) -> None:
             screen.query_one("#send", Button)
             screen.query_one("#download_log")
 
+            async def wait_for_text(get_text, needle: str, timeout: float = 120.0) -> None:
+                start = asyncio.get_running_loop().time()
+                while True:
+                    if needle in get_text():
+                        return
+                    if asyncio.get_running_loop().time() - start > timeout:
+                        raise AssertionError(f"Timed out waiting for {needle!r}")
+                    await pilot.pause()
+
+            async def wait_for_load_outcome(model_id: str, timeout: float = 240.0) -> None:
+                start = asyncio.get_running_loop().time()
+                while True:
+                    log = screen.query_one("#download_log").text
+                    ok = f"Completed load: {model_id}"
+                    err = f"Failed load: {model_id}"
+                    if ok in log:
+                        return
+                    if err in log:
+                        raise AssertionError(f"Model load failed: {model_id}\n{log}")
+                    if asyncio.get_running_loop().time() - start > timeout:
+                        raise AssertionError(f"Timed out waiting for model load: {model_id}\n{log}")
+                    await pilot.pause()
+
             model_input.value = "roneneldan/TinyStories-33M"
             screen.query_one("#load", Button).press()
-            await pilot.pause()
+            await wait_for_load_outcome("roneneldan/TinyStories-33M")
             prompt_input.value = "Write one short sentence about a cat."
             screen.query_one("#send", Button).press()
-            await pilot.pause()
-            assert "Assistant:" in chat.text
+            await wait_for_text(lambda: chat.text, "Assistant:")
             assert "Starting load:" in screen.query_one("#download_log").text
 
             model_input.value = "HuggingFaceTB/SmolLM2-135M-Instruct"
             screen.query_one("#load", Button).press()
-            await pilot.pause()
+            await wait_for_load_outcome("HuggingFaceTB/SmolLM2-135M-Instruct")
             prompt_input.value = "Say hello in five words."
             screen.query_one("#send", Button).press()
-            await pilot.pause()
-            assert "Assistant:" in chat.text
+            await wait_for_text(lambda: chat.text, "Assistant:")
             assert "Starting load:" in screen.query_one("#download_log").text
 
     asyncio.run(run())
