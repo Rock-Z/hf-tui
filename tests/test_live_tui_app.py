@@ -33,6 +33,8 @@ def test_live_tui_load_base_and_chat_models(tmp_path: Path) -> None:
             model_input = screen.query_one("#model")
             prompt_input = screen.query_one("#prompt")
             chat = screen.query_one("#chat")
+            screen.query_one("#send", Button)
+            screen.query_one("#download_log")
 
             model_input.value = "roneneldan/TinyStories-33M"
             screen.query_one("#load", Button).press()
@@ -41,6 +43,7 @@ def test_live_tui_load_base_and_chat_models(tmp_path: Path) -> None:
             screen.query_one("#send", Button).press()
             await pilot.pause()
             assert "Assistant:" in chat.text
+            assert "Starting load:" in screen.query_one("#download_log").text
 
             model_input.value = "HuggingFaceTB/SmolLM2-135M-Instruct"
             screen.query_one("#load", Button).press()
@@ -49,6 +52,7 @@ def test_live_tui_load_base_and_chat_models(tmp_path: Path) -> None:
             screen.query_one("#send", Button).press()
             await pilot.pause()
             assert "Assistant:" in chat.text
+            assert "Starting load:" in screen.query_one("#download_log").text
 
     asyncio.run(run())
 
@@ -92,6 +96,7 @@ def test_model_menu_is_modal_popup(tmp_path: Path) -> None:
             await pilot.pause()
             modal.query_one("#close", Button).press()
             await pilot.pause()
+            assert app.screen is screen
 
     asyncio.run(run())
     saved = json.loads(cfg.read_text())

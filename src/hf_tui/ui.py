@@ -3,12 +3,24 @@ from __future__ import annotations
 from textual.app import ComposeResult
 from textual.containers import Horizontal, Vertical
 from textual.screen import ModalScreen, Screen
-from textual.widgets import Button, Checkbox, Footer, Header, Input, Label, ListItem, ListView, TextArea
+from textual.widgets import (
+    Button,
+    Checkbox,
+    Footer,
+    Header,
+    Input,
+    Label,
+    ListItem,
+    ListView,
+    LoadingIndicator,
+    TextArea,
+)
 
 from hf_tui.core import Core
 
 
 class ModelManagerModal(ModalScreen[None]):
+    BINDINGS = [("escape", "close", "Close"), ("q", "close", "Close")]
     CSS = "#manager {width: 90%; height: 80%; border: round $accent; background: $surface;}"
 
     def __init__(self, core: Core) -> None:
@@ -19,12 +31,15 @@ class ModelManagerModal(ModalScreen[None]):
         with Vertical(id="manager"):
             yield Label("Model Manager", id="manager_title")
             yield ListView(id="models")
-            with Horizontal():
+            with Horizontal(id="manager_actions"):
                 yield Input(placeholder="model id or HF URL", id="manage_input")
                 yield Button("Add", id="add")
                 yield Button("Delete Selected", id="delete")
                 yield Button("Refresh", id="refresh")
                 yield Button("Close", id="close")
+
+    def action_close(self) -> None:
+        self.dismiss(None)
 
     def on_mount(self) -> None:
         self._refresh_models()
@@ -66,13 +81,18 @@ class ChatScreen(Screen[None]):
     def compose(self) -> ComposeResult:
         yield Header()
         with Vertical():
-            with Horizontal():
+            with Horizontal(id="model_row"):
                 yield Input(placeholder="model id / HF URL / mock", id="model")
                 yield Button("Load", id="load")
                 yield Button("Models", id="open_models")
             yield Label("Ready", id="status")
-            yield TextArea("", id="chat", read_only=True)
-            with Horizontal():
+            with Horizontal(id="main_row"):
+                yield TextArea("", id="chat", read_only=True)
+                with Vertical(id="download_sidebar"):
+                    yield Label("Model Download / Load", id="dl_title")
+                    yield LoadingIndicator(id="loader")
+                    yield TextArea("", id="download_log", read_only=True)
+            with Horizontal(id="chat_actions"):
                 yield Input(placeholder="Prompt", id="prompt")
                 yield Input(value=str(self.core.cfg.get("temperature", 0.7)), id="temp")
                 yield Input(value=str(self.core.cfg.get("max_new_tokens", 128)), id="tokens")
@@ -83,6 +103,10 @@ class ChatScreen(Screen[None]):
     def action_manage_models(self) -> None:
         self.app.push_screen(ModelManagerModal(self.core))
 
+    def _append_download_log(self, line: str) -> None:
+        box = self.query_one("#download_log", TextArea)
+        box.text = (box.text + "\n" + line).strip()
+
     def on_button_pressed(self, event: Button.Pressed) -> None:
         status = self.query_one("#status", Label)
         if event.button.id == "open_models":
@@ -90,7 +114,10 @@ class ChatScreen(Screen[None]):
             return
         if event.button.id == "load":
             m = self.query_one("#model", Input).value or "mock"
+            self._append_download_log(f"Starting load: {m}")
+            status.update(f"Loading {m} ...")
             status.update(self.core.load_model(m))
+            self._append_download_log(f"Completed load: {m}")
             return
         if event.button.id != "send":
             return
