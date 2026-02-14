@@ -1,0 +1,47 @@
+[
+  {
+    "op": "set",
+    "target": "#model",
+    "value": "mock"
+  },
+  {
+    "op": "click",
+    "target": "#load"
+  },
+  {
+    "op": "set",
+    "target": "#prompt",
+    "value": "hello from harness"
+  },
+  {
+    "op": "click",
+    "target": "#send"
+  },
+  {
+    "op": "assert_contains",
+    "target": "#chat",
+    "value": "hello from harness"
+  },
+  {
+    "op": "action",
+    "value": "action_manage_models"
+  },
+  {
+    "op": "set",
+    "target": "#manage_input",
+    "value": "https://huggingface.co/org/model"
+  },
+  {
+    "op": "click",
+    "target": "#add"
+  },
+  {
+    "op": "key",
+    "value": "escape"
+  },
+  {
+    "op": "assert_contains",
+    "target": "#download_log",
+    "value": "Starting load: mock"
+  }
+]

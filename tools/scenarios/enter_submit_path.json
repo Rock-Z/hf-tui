@@ -1,0 +1,7 @@
+[
+  {"op": "set", "target": "#prompt", "value": "enter key path"},
+  {"op": "focus", "target": "#prompt"},
+  {"op": "key", "value": "enter"},
+  {"op": "assert_contains", "target": "#chat", "value": "enter key path"},
+  {"op": "assert_contains", "target": "#chat", "value": "Assistant:"}
+]
