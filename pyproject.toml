@@ -1,0 +1,28 @@
+[project]
+name = "hf-tui"
+version = "0.1.0"
+description = "Minimal Textual TUI for Hugging Face models"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+  "textual>=0.70.0",
+  "transformers>=4.44.0",
+  "torch>=2.2.0",
+  "huggingface_hub>=0.24.0",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0.0", "ruff>=0.5.0"]
+
+[project.scripts]
+hf-tui = "hf_tui.cli:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.ruff]
+line-length = 100
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
